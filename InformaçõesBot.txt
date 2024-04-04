@@ -1,0 +1,22 @@
+Mp896y0bvFHnX3VA1kVgnb0rO5ubidmP1l5vZzeKTWlilArtLPet9rgyXi7xXxX5
+YgUcTrSOlbWoamadyftUy6tft8kynG9aX2xW4SrKk3gBkDZdoUUfRDhRzQEaooBn
+
+
+# client = Client('zy6W4shF0DK3xhtf1Y4ijbcGhqgKHdbsXRJMdWyiZ2a41SJMn5zItGBWbwq1O2TP', "8E1p3Cq8Q5kG8uPsbNAf0bp6NCvwSppw9Wmq9snNOxAa2L6xyXjzSj7iXAUeRkJr", testnet=True)
+
+# order = client.create_test_order(
+#     symbol="BTCUSDT",
+#     side=SIDE_BUY,
+#     type=ORDER_TYPE_MARKET,
+#     quantity=0.1
+# )
+
+# if isinstance(order, dict) and 'code' in order:
+#     print("Erro na solicitação:", order['msg'])
+# else:
+#     print("Solicitação bem-sucedida!")
+
+
+token bot
+
+7167225065:AAEbguGVG10yHcSKGjgskwbrHswI-QHTDyw
