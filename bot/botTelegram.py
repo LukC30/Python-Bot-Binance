@@ -1,12 +1,14 @@
 import logging
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, filters, ApplicationBuilder, ContextTypes
-from binance.client import Client
-from binance.enums import *
 from telegram import *
 from telegram import Bot
 import re
-import mysql.connector
+import requests
+import json
+
+
+endpoint = "http://127.0.0.1:5000/"
 
 
 def calcular_lucro_prejuizo(preco_atual, preco_inicial, valor_entrada):
@@ -23,25 +25,15 @@ def calc_70_porcento(preco):
     return setenta_porcento
 
 
-conn = mysql.connector.connect(
-    host = 'localhost',
-    user = 'root',
-    password = 'admin',
-    database = 'db_binance'
-)
 
-if conn.is_connected():
-    print("Estamos conectados ao banco de dados")
+
+
     
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 TELEGRAM_TOKEN = 'SEU_TOKEN'
-
-BINANCE_API_KEY = 'zy6W4shF0DK3xhtf1Y4ijbcGhqgKHdbsXRJMdWyiZ2a41SJMn5zItGBWbwq1O2TP'
-BINANCE_API_SECRET = '8E1p3Cq8Q5kG8uPsbNAf0bp6NCvwSppw9Wmq9snNOxAa2L6xyXjzSj7iXAUeRkJr'
-client = Client(BINANCE_API_KEY,BINANCE_API_SECRET,testnet=True)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Olá! Eu sou o seu bot de negociação. Envie uma mensagem com as informações da sua ordem.")
@@ -59,17 +51,17 @@ async def execute_order(message_text, bot, update):
     padraoEntrada = r'\bEntrada Agendada\b'
     padraoAlvo = r'\bAlvo Atingido\b'
     par = ""
-    api = conn.cursor()
     if re.search(padraoEntrada, texto): 
         padrao_par = r'([A-Za-z0-9/]+)USDT\b'
         padrao_alvos = r'\d+\.\d+'
         padrao_stop = r'\d+% do Preço'
         re1 = r'\bVenda\b'
+        re2 = r'\bCompra\b'
         side = ""
         if re.search(re1, texto):
-            side = SIDE_SELL
-        else:
-            side = SIDE_BUY
+            side = "SELL"
+        elif re.search(re2, texto):
+            side = "BUY"
         
         par_search = re.search(padrao_par, texto)
         
@@ -81,7 +73,7 @@ async def execute_order(message_text, bot, update):
             par = ''.join(par)
             print(par)
         else:
-            await bot.send_message(chat_id=update.effective_chat.id, text="Erro: Par de ativos não encontrado.")
+            print("Erro: Par de ativos não encontrado.")
             return
         
         alvos = re.findall(padrao_alvos, texto)
@@ -95,23 +87,48 @@ async def execute_order(message_text, bot, update):
         
         try:
             if side == 'BUY':
-                order = client.create_test_order(symbol=par, side=Client.SIDE_BUY, type=Client.ORDER_TYPE_LIMIT, timeInForce=Client.TIME_IN_FORCE_GTC, quantity=10, price=float(alvos[1]))
+                dadosCompra = {
+                    "par_ativos" : par,
+                    "valor_depositado" : str(50),
+                    'price' : str(alvos[0]),
+                    'ultimo_alvo' : str(alvos[numero_alvos - 1]),
+                    "stop_loss" : stop
+                }
+                try:
+                    response = requests.post((endpoint+'new-order-buy'), json=dadosCompra)
+                
+                
+                    if response.status_code == 200:
+                        print(f"Ordem executada com sucesso {response.text}")
+                    else: 
+                        print(f"Order não realizada, veja {response.text}")
+                except Exception as e:
+                    print(f"Erro na order: {e}")
+
             else:
-                order = client.create_test_order(symbol=par, side=Client.SIDE_SELL, type=Client.ORDER_TYPE_LIMIT,timeInForce=Client.TIME_IN_FORCE_GTC, quantity=10, price=float(alvos[1]))
-            
-            await bot.send_message(chat_id=update.effective_chat.id, text=f"Ordem executada com sucesso:\n{order}")
-            
-            try:
-                api.execute(f"Insert into tbl_order(api_key, ativo, tipo_de_ordem, valor_depositado ,ultimo_alvo, ativa) values('{BINANCE_API_KEY}','{par}', '{side.upper()}', {alvos[1]}, {alvos[len(alvos)-1]}, 's')")
-                print("Insert feito")
-                conn.commit()
-                    
-            except Exception as e:
-                    print("Erro ao executar no banco de dados" + str(e))
+                dadosCompra = {
+                    "par_ativos" : par,
+                    "valor_depositado" : 50,
+                    'price' : alvos[0],
+                    'ultimo_alvo' : alvos[numero_alvos-1],
+                    "stop_loss" : stop
+                }
+                try:
+                    response = requests.post((endpoint+'new-order-sell'), json=dadosCompra)
+                
+                
+                    if response.status_code == 200:
+                        print("Order realizada com sucesso!")
+                    else: 
+                        print(response.text)
+                except Exception as e:
+                    print(f"Erro na order: {str(e)}")
+
                     
         except Exception as e:
-            await bot.send_message(chat_id=update.effective_chat.id, text=f"Erro ao executar a ordem: {e}")
-   
+            print(f"Erro ao executar a ordem: {e}")
+            
+    
     elif re.search(padraoAlvo, texto):
         padrao_ativos = r'([A-Z0-9]+/[A-Z0-9]+)'
         padrao_preco = r'Preço: (\d+\.\d+)'
@@ -127,8 +144,8 @@ async def execute_order(message_text, bot, update):
         ultimo_alvo = 0
         try:
             # id = api.execute(f"select id from tbl_order where ativo = '{par_ativos}' and ativa = 's'; ")
-            api.execute(f"select ultimo_alvo from tbl_order where ativo = '{par_ativos}' and ativa = 's';")
-            ultimo_alvo = api.fetchone()
+            # api.execute(f"select ultimo_alvo from tbl_order where ativo = '{par_ativos}' and ativa = 's';")
+            # ultimo_alvo = api.fetchone()
             # order_id = int(api.execute(f"select id from tbl_order where ativo = '{par_ativos}' and ativa = 's'; "))
             
             print(ultimo_alvo)
@@ -136,22 +153,23 @@ async def execute_order(message_text, bot, update):
             print("Select feito" + ultimo_alvo)
             
             
+            
         except Exception as e:
             print("Erro ao executar no banco de dados" + str(e))
-        if preco == preco:
-            try:
-                new_stop_loss = calc_70_porcento(float(preco))
-                result = client.oco(
-                    symbol=par_ativos,
-                    orderId= order_id,
-                    side=Client.SIDE_BUY,
-                    stopPrice=new_stop_loss,
-                    newOrderRespType=ORDER_RESP_TYPE_RESULT
-                )
+        # if preco == preco:
+        #     # try:
+        #     #     new_stop_loss = calc_70_porcento(float(preco))
+        #     #     result = client.oco(
+        #     #         symbol=par_ativos,
+        #     #         orderId= order_id,
+        #     #         side=Client.SIDE_BUY,
+        #     #         stopPrice=new_stop_loss,
+        #     #         newOrderRespType=ORDER_RESP_TYPE_RESULT
+        #     #     )
                 
-                print("order alterada." + result)
-            except Exception as e:
-                print("Erro ao alterar a order: " + str(e))
+        #         print("order alterada.")
+        #     except Exception as e:
+        #         print("Erro ao alterar a requisição: " + str(e))
         
         
 application = ApplicationBuilder().token('7167225065:AAEbguGVG10yHcSKGjgskwbrHswI-QHTDyw').build()
