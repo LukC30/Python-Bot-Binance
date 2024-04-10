@@ -17,6 +17,18 @@ YgUcTrSOlbWoamadyftUy6tft8kynG9aX2xW4SrKk3gBkDZdoUUfRDhRzQEaooBn
 #     print("Solicitação bem-sucedida!")
 
 
+client:
+
+Api key
+
+DPBkhIicKc7G0tTn9Cc6YTRqu5OUkH3XQ60C7CTaffcAXJQCCqPG1Qrt8j75GatZ
+
+Secret Key
+
+14i21mWUsTAjtldweBRsfbcaXO39ukbBZwejFUoHtlOsnNO62Zb9xnuuwuNUGX7r
+
+
+
 token bot
 
 7167225065:AAEbguGVG10yHcSKGjgskwbrHswI-QHTDyw
