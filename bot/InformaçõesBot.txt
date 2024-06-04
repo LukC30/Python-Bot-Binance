@@ -1,5 +1,3 @@
-Mp896y0bvFHnX3VA1kVgnb0rO5ubidmP1l5vZzeKTWlilArtLPet9rgyXi7xXxX5
-YgUcTrSOlbWoamadyftUy6tft8kynG9aX2xW4SrKk3gBkDZdoUUfRDhRzQEaooBn
 
 
 # order = client.create_test_order(
