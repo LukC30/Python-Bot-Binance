@@ -2,8 +2,6 @@ Mp896y0bvFHnX3VA1kVgnb0rO5ubidmP1l5vZzeKTWlilArtLPet9rgyXi7xXxX5
 YgUcTrSOlbWoamadyftUy6tft8kynG9aX2xW4SrKk3gBkDZdoUUfRDhRzQEaooBn
 
 
-# client = Client('zy6W4shF0DK3xhtf1Y4ijbcGhqgKHdbsXRJMdWyiZ2a41SJMn5zItGBWbwq1O2TP', "8E1p3Cq8Q5kG8uPsbNAf0bp6NCvwSppw9Wmq9snNOxAa2L6xyXjzSj7iXAUeRkJr", testnet=True)
-
 # order = client.create_test_order(
 #     symbol="BTCUSDT",
 #     side=SIDE_BUY,
@@ -16,19 +14,3 @@ YgUcTrSOlbWoamadyftUy6tft8kynG9aX2xW4SrKk3gBkDZdoUUfRDhRzQEaooBn
 # else:
 #     print("Solicitação bem-sucedida!")
 
-
-client:
-
-Api key
-
-DPBkhIicKc7G0tTn9Cc6YTRqu5OUkH3XQ60C7CTaffcAXJQCCqPG1Qrt8j75GatZ
-
-Secret Key
-
-14i21mWUsTAjtldweBRsfbcaXO39ukbBZwejFUoHtlOsnNO62Zb9xnuuwuNUGX7r
-
-
-
-token bot
-
-7167225065:AAEbguGVG10yHcSKGjgskwbrHswI-QHTDyw
